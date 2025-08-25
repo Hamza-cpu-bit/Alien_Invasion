@@ -1,0 +1,37 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.dll
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+venv.bak/
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+
+# --- PyCharm / JetBrains ---
+.idea/
+*.iml
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+
+# --- Logs / Caches ---
+*.log
+*.sqlite3
+.cache/
+*.pyc
+
+# --- Game assets cache ---
+*.tmp
