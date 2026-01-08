@@ -33,7 +33,7 @@ class Player:
         self.speed = 6
         self.color = GREEN
         self.health = 3
-        self.max_health = 3
+        self.max_health = 5
         self.shield_active = False
         self.shield_timer = 0
         self.rapid_fire = False
@@ -125,10 +125,10 @@ class Alien:
             self.shoot_cooldown -= 1
 
     def can_shoot(self):
-        return self.shoot_cooldown <= 0 and random.random() < 0.02
+        return self.shoot_cooldown <= 0 and random.random() < 0.005
 
     def shoot(self):
-        self.shoot_cooldown = random.randint(60, 180)
+        self.shoot_cooldown = random.randint(120, 240)
 
     def draw(self, screen):
         # Draw alien body
@@ -223,7 +223,13 @@ class Game:
         self.move_down_amount = 0
 
         self.game_state = 'menu'  # menu, playing, paused, game_over
-        self.high_score = 0
+
+        # Load high score from file if exists
+        try:
+            with open('highscore.txt', 'r') as f:
+                self.high_score = int(f.read())
+        except:
+            self.high_score = 0
 
         self.spawn_aliens()
 
@@ -323,6 +329,16 @@ class Game:
 
         if self.player.health <= 0:
             self.game_state = 'game_over'
+            self.save_high_score()
+
+    def save_high_score(self):
+        if self.score > self.high_score:
+            self.high_score = self.score
+            try:
+                with open('highscore.txt', 'w') as f:
+                    f.write(str(self.high_score))
+            except:
+                pass
 
     def check_collisions(self):
         # Player bullets vs aliens
@@ -401,6 +417,11 @@ class Game:
         title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3))
         self.screen.blit(title, title_rect)
 
+        # Display high score on menu
+        high_score_display = self.small_font.render(f"High Score: {self.high_score}", True, YELLOW)
+        high_score_rect = high_score_display.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3 + 50))
+        self.screen.blit(high_score_display, high_score_rect)
+
         instructions = [
             "Press SPACE to Start",
             "",
@@ -416,7 +437,7 @@ class Game:
             "R - Rapid Fire"
         ]
 
-        y = SCREEN_HEIGHT // 2
+        y = SCREEN_HEIGHT // 2 + 20
         for instruction in instructions:
             text = self.small_font.render(instruction, True, WHITE)
             text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, y))
@@ -446,8 +467,11 @@ class Game:
         score_text = self.small_font.render(f"Score: {self.score}", True, WHITE)
         self.screen.blit(score_text, (10, 10))
 
+        high_score_text = self.small_font.render(f"High Score: {self.high_score}", True, YELLOW)
+        self.screen.blit(high_score_text, (10, 40))
+
         level_text = self.small_font.render(f"Level: {self.level}", True, WHITE)
-        self.screen.blit(level_text, (10, 40))
+        self.screen.blit(level_text, (10, 70))
 
         # Draw health
         for i in range(self.player.health):
@@ -458,7 +482,7 @@ class Game:
             ])
 
         # Draw active power-ups
-        y_offset = 70
+        y_offset = 100
         if self.player.shield_active:
             shield_text = self.small_font.render(f"Shield: {self.player.shield_timer // 60}s", True, CYAN)
             self.screen.blit(shield_text, (10, y_offset))
@@ -496,16 +520,28 @@ class Game:
         score_rect = score_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(score_text, score_rect)
 
+        # Show if new high score
+        if self.score >= self.high_score:
+            new_high = self.small_font.render("NEW HIGH SCORE!", True, YELLOW)
+            new_high_rect = new_high.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 30))
+            self.screen.blit(new_high, new_high_rect)
+            level_y = SCREEN_HEIGHT // 2 + 60
+        else:
+            high_score_text = self.small_font.render(f"High Score: {self.high_score}", True, YELLOW)
+            high_score_rect = high_score_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 30))
+            self.screen.blit(high_score_text, high_score_rect)
+            level_y = SCREEN_HEIGHT // 2 + 60
+
         level_text = self.small_font.render(f"Reached Level: {self.level}", True, WHITE)
-        level_rect = level_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 30))
+        level_rect = level_text.get_rect(center=(SCREEN_WIDTH // 2, level_y))
         self.screen.blit(level_text, level_rect)
 
         restart = self.small_font.render("Press SPACE to Restart", True, GREEN)
-        restart_rect = restart.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 80))
+        restart_rect = restart.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 110))
         self.screen.blit(restart, restart_rect)
 
         menu = self.small_font.render("Press ESC for Menu", True, WHITE)
-        menu_rect = menu.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 110))
+        menu_rect = menu.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 140))
         self.screen.blit(menu, menu_rect)
 
     def run(self):

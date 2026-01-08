@@ -96,3 +96,4 @@ logs/
 # ===============================
 *.backup
 *.old
+highscore.txt
